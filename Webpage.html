@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Clock Calculator</title>
+  <style>
+    .field-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .field-container label {
+      margin-right: 10px;
+    }
+    .field-container span {
+      margin-left: 10px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100px;
+      padding: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Time Clock Calculator</h1>
+  <form id="timeClockForm">
+    <div class="field-container">
+      <label for="morningIn">Morning Clock In Time:</label>
+      <input type="text" id="morningIn" placeholder="HH:MM" required>
+    </div>
+
+    <div class="field-container">
+      <label for="lunchOut">Lunch Clock Out Time:</label>
+      <input type="text" id="lunchOut" placeholder="HH:MM" required>
+      <span id="timeWorkedMorning">Time Worked: --:--</span>
+    </div>
+
+    <div class="field-container">
+      <label for="afternoonIn">Afternoon Clock In Time:</label>
+      <input type="text" id="afternoonIn" placeholder="HH:MM" required>
+    </div>
+
+    <button type="button" onclick="calculateClockOut()">Calculate Clock Out Time</button>
+  </form>
+
+  <h2 id="result"></h2>
+
+  <script>
+    function calculateClockOut() {
+      // Get input values
+      const morningIn = document.getElementById("morningIn").value;
+      const lunchOut = document.getElementById("lunchOut").value;
+      const afternoonIn = document.getElementById("afternoonIn").value;
+
+      if (!morningIn || !lunchOut || !afternoonIn) {
+        document.getElementById("result").innerText = "Please fill out all fields.";
+        return;
+      }
+
+      // Parse times
+      const morningInTime = parseTime(morningIn);
+      const lunchOutTime = parseTime(lunchOut);
+      const afternoonInTime = parseTime(afternoonIn);
+
+      if (!morningInTime || !lunchOutTime || !afternoonInTime) {
+        document.getElementById("result").innerText = "Invalid time format. Use HH:MM.";
+        return;
+      }
+
+      // Calculate total hours worked before lunch
+      const hoursBeforeLunch = (lunchOutTime - morningInTime) / (1000 * 60 * 60);
+
+      // Calculate clock-out time
+      const totalRequiredHours = 8;
+      const hoursRemaining = totalRequiredHours - hoursBeforeLunch;
+      const clockOutTime = new Date(afternoonInTime.getTime() + hoursRemaining * 60 * 60 * 1000);
+
+      // Format result as HH:MM
+      const formattedClockOut = formatTime(clockOutTime);
+
+      // Display result
+      document.getElementById("result").innerText = `You should clock out at: ${formattedClockOut}`;
+    }
+
+    function calculateTimeWorked() {
+      const morningIn = document.getElementById("morningIn").value;
+      const lunchOut = document.getElementById("lunchOut").value;
+
+      if (morningIn && lunchOut) {
+        const morningInTime = parseTime(morningIn);
+        const lunchOutTime = parseTime(lunchOut);
+
+        if (!morningInTime || !lunchOutTime) {
+          document.getElementById("timeWorkedMorning").innerText = "Time Worked: --:--";
+          return;
+        }
+
+        const timeWorkedMillis = lunchOutTime - morningInTime;
+        const hoursWorked = Math.floor(timeWorkedMillis / (1000 * 60 * 60));
+        const minutesWorked = Math.floor((timeWorkedMillis % (1000 * 60 * 60)) / (1000 * 60));
+
+        document.getElementById("timeWorkedMorning").innerText = `Time Worked: ${hoursWorked}h ${minutesWorked}m`;
+      } else {
+        document.getElementById("timeWorkedMorning").innerText = "Time Worked: --:--";
+      }
+    }
+
+    function parseTime(timeStr) {
+      const [hours, minutes] = timeStr.split(":").map(Number);
+      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return null;
+      }
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      return date;
+    }
+
+    function formatTime(date) {
+      return date.toTimeString().split(" ")[0].slice(0, 5);
+    }
+
+    document.getElementById("lunchOut").addEventListener("input", calculateTimeWorked);
+  </script>
+</body>
+</html>
