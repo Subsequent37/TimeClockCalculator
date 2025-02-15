@@ -26,19 +26,21 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
-        with:  # ✅ Proper indentation here
+        with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_ISLAND_02D5F901E }}
           action: "upload"
 
           # Static Web App settings
-          app_location: "/"  # Your root folder where index.html is
+          app_location: "/"  # Where index.html is located
           api_location: ""  # No API needed
           output_location: ""  # No build output
 
-          # 🚀 Completely disable Oryx build to prevent 'package.json' errors
-          skip_app_build: true  # ✅ Skip Oryx build
-          skip_api_build: true  # ✅ Skip API build
-          is_static_export: true  # ✅ Tell Azure it's a pure static site
+          # 🚀 Force-disable Oryx Build (this is the critical fix)
+          skip_app_build: true  
+          skip_api_build: true  
+          is_static_export: true  
+          app_build_command: ""  # 👈 Forces no build command (important!)
+          api_build_command: ""  # 👈 Forces no build command for API
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
